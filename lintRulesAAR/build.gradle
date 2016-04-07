@@ -1,0 +1,46 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.2"
+
+    defaultConfig {
+        minSdkVersion 14
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+configurations{
+    lintRules
+}
+
+dependencies {
+    lintRules project(path: ":lintrules", configuration: "lintChecks")
+
+    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:appcompat-v7:23.2.1'
+}
+
+task copyLintJar(type: Copy){
+    from (configurations.lintRules) {
+        rename {
+            String fileName ->
+                'lint.jar'
+        }
+    }
+    into 'build/intermediates/lint/'
+}
+
+
+project.afterEvaluate{
+    def compileLintTask = project.tasks.find {it.name == 'compileLint'}
+    compileLintTask.dependsOn(copyLintJar)
+}
